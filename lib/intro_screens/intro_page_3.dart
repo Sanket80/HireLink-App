@@ -25,6 +25,7 @@ class IntroPage3 extends StatelessWidget {
             child: Text(
               'Crafting Your Career Canvas',
               style: TextStyle(fontSize: 24),
+              textAlign: TextAlign.center,
             ),
           ),
           SizedBox(
