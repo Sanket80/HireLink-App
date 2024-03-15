@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hirelink/Screens/Form.dart';
 import 'package:hirelink/Screens/Splash.dart';
 
 void main() {
@@ -13,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'HireLink',
-      home: SplashScreen(),
+      home: FormScreen(),
     );
   }
 }
