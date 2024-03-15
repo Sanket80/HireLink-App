@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart'; // Import flutter_pdfview package
+import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:hirelink/Screens/Form.dart'; // Import flutter_pdfview package
 
 class Register extends StatefulWidget {
   const Register({Key? key}) : super(key: key);
@@ -39,9 +40,10 @@ class _RegisterState extends State<Register> {
           children: [
             if (_selectedPdfFileName != null)
               Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  SizedBox(height: 30),
                   Image.asset('assets/Adobe PDF.png', height: 200, width: 200),
-                  SizedBox(height: 10),
                   GestureDetector(
                     onTap: () {
                       if (_selectedPdfFilePath != null) {
@@ -68,13 +70,12 @@ class _RegisterState extends State<Register> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
-
+                  SizedBox(height: 150),
                   GestureDetector(
                     onTap: () {
                       Navigator.push(context, MaterialPageRoute(
                         builder: (context) {
-                          return Register();
+                          return FormScreen();
                         },
                       ));
                     },
@@ -101,17 +102,23 @@ class _RegisterState extends State<Register> {
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.black, width: 1),
+                  border: Border.all(color: Color(0xffe11d48), width: 1),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextButton(
                     onPressed: _pickPdf,
                     child: Padding(
-                      padding: const EdgeInsets.all(78.0),
-                      child: Text(
-                        'Select Resume',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      padding: const EdgeInsets.all(60.0),
+                      child: Column(
+                        children: [
+                          // pdf icon
+                          Image.asset('assets/Adobe PDF.png', height: 120, width: 120,),
+                          Text(
+                            'Select Resume',
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                        ],
                       ),
                     ),
                   ),
