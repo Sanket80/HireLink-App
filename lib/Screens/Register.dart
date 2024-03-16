@@ -1,7 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:hirelink/Screens/Form.dart'; // Import flutter_pdfview package
+import 'package:http/http.dart' as http;
 
 class Register extends StatefulWidget {
   const Register({Key? key}) : super(key: key);
@@ -14,6 +18,7 @@ class _RegisterState extends State<Register> {
   String? _selectedPdfFileName;
   String? _selectedPdfFilePath; // Store the file path of the selected PDF
 
+  // Function to pick PDF file
   Future<void> _pickPdf() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -25,6 +30,46 @@ class _RegisterState extends State<Register> {
         _selectedPdfFileName = result.files.single.name;
         _selectedPdfFilePath = result.files.single.path; // Store the file path
       });
+    }
+  }
+
+  // Function to upload resume to MongoDB database
+  Future<void> uploadResumeToMongoDB() async {
+    if (_selectedPdfFilePath != null) {
+      try {
+        // Read the PDF file as bytes
+        File file = File(_selectedPdfFilePath!);
+        List<int> pdfBytes = await file.readAsBytes();
+
+        // Convert PDF bytes to base64
+        String base64String = base64Encode(pdfBytes);
+
+        // Prepare the request body
+        Map<String, dynamic> requestBody = {
+          'resume': base64String,
+        };
+
+        // Send POST request to the backend API
+        var response = await http.post(
+          Uri.parse('https://192.168.0.102:3000'), // Replace with your backend API URL
+          body: jsonEncode(requestBody),
+          headers: {'Content-Type': 'application/json'},
+        );
+
+        if (response.statusCode == 200) {
+          // Resume uploaded successfully
+          print('Resume uploaded successfully');
+        } else {
+          // Failed to upload resume
+          print('Failed to upload resume: ${response.body}');
+        }
+      } catch (e) {
+        // Handle errors
+        print('Error uploading resume: $e');
+      }
+    } else {
+      // No PDF file selected
+      print('No PDF file selected.');
     }
   }
 
@@ -73,6 +118,8 @@ class _RegisterState extends State<Register> {
                   SizedBox(height: 150),
                   GestureDetector(
                     onTap: () {
+                      // Call the uploadResumeToMongoDB function
+                      uploadResumeToMongoDB();
                       Navigator.push(context, MaterialPageRoute(
                         builder: (context) {
                           return FormScreen();

@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:hirelink/Bar%20Graph/bar_graph.dart';
@@ -14,6 +15,13 @@ class _StatisticsPageState extends State<StatisticsPage> {
   int _selectedIndex = 1;
 
   List<double> salary = [1000, 2000, 3000, 4000, 5000];
+  // Dummy data for sector distribution
+  List<Map<String, dynamic>> sectorData = [
+    {'sector': 'Tech', 'percentage': 40.0, 'color': Colors.black},
+    {'sector': 'Health', 'percentage': 30.0, 'color': Color(0xffe11d48)},
+    {'sector': 'Finance', 'percentage': 20.0, 'color': Colors.grey},
+    {'sector': 'Edu', 'percentage': 10.0, 'color': Color(0xffFfaeae)},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -21,22 +29,56 @@ class _StatisticsPageState extends State<StatisticsPage> {
       appBar: AppBar(
         title: const Text('Statistics'),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Center(
-            child: SizedBox(
-              height: 400,
-              child: MyBarGraph(salary: salary),
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(height: 20),
+            Center(
+              child: SizedBox(
+                height: 400,
+                child: MyBarGraph(salary: salary),
+              ),
             ),
-          ),
-          SizedBox(height: 4),
-          Text(
-            'Computer Science Domain Salaries Overview',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-          ),
-        ],
+            SizedBox(height: 4),
+            Text(
+              'Computer Science Domain Salaries Overview',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 84),
+            Container(
+              height: 300, // Set the desired height
+              width: double.infinity, // Set the width to match the parent width
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Text("Sector Distribution",style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),),
+                  PieChart(
+                    swapAnimationDuration: const Duration(milliseconds: 750),
+                    swapAnimationCurve: Curves.easeInQuint,
+                    PieChartData(
+                      sections: List.generate(
+                        sectorData.length,
+                            (index) => PieChartSectionData(
+                          value: (sectorData[index]['percentage'] as double) ?? 0,
+                          color: sectorData[index]['color'] as Color,
+                          title: '${sectorData[index]['sector']} ${((sectorData[index]['percentage'] as double)).toStringAsFixed(2)}%',
+                          radius: 60,
+                          titleStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          ],
+        ),
       ),
       bottomNavigationBar: Container(
         color: Colors.black,
