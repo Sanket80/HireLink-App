@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:hirelink/Screens/statistics.dart';
 import 'package:http/http.dart' as http;
 
 class ChatBot extends StatefulWidget {
@@ -12,6 +14,7 @@ class ChatBot extends StatefulWidget {
 }
 
 class _ChatBotState extends State<ChatBot> {
+  int _selectedIndex = 2;
   ChatUser myself = ChatUser(id: '1', firstName: 'User');
   ChatUser bot = ChatUser(id: '2', firstName: 'Gemini');
   List<ChatMessage> allMessages = [];
@@ -86,12 +89,6 @@ class _ChatBotState extends State<ChatBot> {
         iconTheme: const IconThemeData(
           color: Colors.black, // Change your color here
         ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-
-          },
-        ),
       ),
       body: DashChat(
         typingUsers: typing,
@@ -108,7 +105,69 @@ class _ChatBotState extends State<ChatBot> {
           }
         }),
       ),
+      bottomNavigationBar: Container(
+        color: Colors.black,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+          child: GNav(
+            selectedIndex: _selectedIndex,
+            backgroundColor: Colors.black,
+            activeColor: Colors.white,
+            color: Colors.white,
+            tabBackgroundColor: Colors.grey.shade800,
+            gap: 8,
+            padding: EdgeInsets.all(12),
+            tabs: [
+              GButton(
+                icon: Icons.home,
+                text: 'Home',
+                onPressed: () {
+                  setState(() {
+                    _selectedIndex = 0;
+                  });
+                },
+              ),
+              GButton(
+                icon: Icons.insert_chart_outlined,
+                text: 'Stats',
+                onPressed: () {
+                  setState(() {
+                    _selectedIndex = 1;
+                  });
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StatisticsPage(),
+                    ),
+                  );
+                },
+              ),
+              GButton(
+                icon: Icons.chat,
+                text: 'Chat',
+                onPressed: () {
+                  setState(() {
+                    _selectedIndex = 2;
+                  });
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ChatBot()),
+                  );
+                },
+              ),
+              GButton(
+                icon: Icons.home_work_outlined,
+                text: 'Jobs',
+                onPressed: () {
+                  setState(() {
+                    _selectedIndex = 3;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
-
 }

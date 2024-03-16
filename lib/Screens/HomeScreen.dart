@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:hirelink/Screens/CompanyDetails.dart';
 import 'package:hirelink/Screens/chat_bot.dart';
 import 'package:hirelink/Screens/statistics.dart';
 
@@ -43,20 +44,22 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.grey[200],),
+      appBar: AppBar(
+        backgroundColor: Colors.grey[200],
+      ),
       body: Container(
         color: Colors.grey[200],
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
+              padding: const EdgeInsets.symmetric(horizontal: 28),
               child: Text(
-                'Featured Jobs',
+                'Offered Jobs',
                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.left,
               ),
             ),
-
             Expanded(
               child: ListView.builder(
                 itemCount: jobs.length,
@@ -98,7 +101,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   setState(() {
                     _selectedIndex = 1;
                   });
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => StatisticsPage(),),);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StatisticsPage(),
+                    ),
+                  );
                 },
               ),
               GButton(
@@ -108,7 +116,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   setState(() {
                     _selectedIndex = 2;
                   });
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChatBot()),);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ChatBot()),
+                  );
                 },
               ),
               GButton(
@@ -140,6 +151,12 @@ class JobCard extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           // Add your onTap function here
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CompanyDetails(),
+            ),
+          );
         },
         child: Card(
           color: Colors.white,
@@ -150,7 +167,11 @@ class JobCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Image.asset(job.imageLink, height: 50, width: 50,),
+                    Image.asset(
+                      job.imageLink,
+                      height: 50,
+                      width: 50,
+                    ),
                     const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
