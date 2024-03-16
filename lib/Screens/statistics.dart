@@ -4,6 +4,8 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:hirelink/Bar%20Graph/bar_graph.dart';
 import 'package:hirelink/Screens/HomeScreen.dart';
 
+import 'chat_bot.dart';
+
 class StatisticsPage extends StatefulWidget {
   const StatisticsPage({super.key});
 
@@ -19,8 +21,8 @@ class _StatisticsPageState extends State<StatisticsPage> {
   List<Map<String, dynamic>> sectorData = [
     {'sector': 'Tech', 'percentage': 40.0, 'color': Colors.black},
     {'sector': 'Health', 'percentage': 30.0, 'color': Color(0xffe11d48)},
-    {'sector': 'Finance', 'percentage': 20.0, 'color': Colors.grey},
-    {'sector': 'Edu', 'percentage': 10.0, 'color': Color(0xffFfaeae)},
+    {'sector': 'Finance', 'percentage': 20.0, 'color': Colors.grey.shade600},
+    {'sector': 'Edu', 'percentage': 10.0, 'color': Color(0xffFf5d5d)},
   ];
 
   @override
@@ -56,6 +58,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
                   Text("Sector Distribution",style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
+                    color: Colors.grey,
                   ),),
                   PieChart(
                     swapAnimationDuration: const Duration(milliseconds: 750),
@@ -124,6 +127,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
                   setState(() {
                     _selectedIndex = 2;
                   });
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChatBot()),);
                 },
               ),
               GButton(
