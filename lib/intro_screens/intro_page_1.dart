@@ -20,9 +20,12 @@ class IntroPage1 extends StatelessWidget {
           SizedBox(
             height: 40,
           ), // SizedBox
-          const Text(
-            'Your Profile, Your Potential',
-            style: TextStyle(fontSize: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              'Your Profile, Your Potential',
+              style: TextStyle(fontSize: 24),
+            ),
           ),
           SizedBox(
             height: 6,

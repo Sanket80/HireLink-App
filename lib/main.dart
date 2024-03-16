@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:hirelink/Screens/onBoarding.dart';
+import 'package:hirelink/Screens/Form.dart';
+import 'package:hirelink/Screens/Register.dart';
+import 'package:hirelink/Screens/Splash.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,7 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'HireLink',
-      home: onBoardingScreen(),
+      home: Register(),
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hirelink/Screens/LoginScreen.dart';
 import 'package:hirelink/intro_screens/intro_page_1.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -74,22 +75,57 @@ class _onBoardingScreenState extends State<onBoardingScreen> {
                         },
                       ));
                     },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(
-                            10),
-                        color: Color(0xffe11d48),
-                      ),
-                      padding:
-                          EdgeInsets.symmetric(vertical: 12, horizontal: 40),
-                      child: Text(
-                        'Get Started',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(
+                                10),
+                            color: Color(0xffe11d48),
+                          ),
+                          padding:
+                              EdgeInsets.symmetric(vertical: 12, horizontal: 40),
+                          child: Text(
+                            'Get Started',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                      ),
+                        SizedBox(height: 30),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              child: Text('Already have an account?'),
+                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen(),),);
+                              },
+                              child: Container(
+                                child: Text(
+                                  ' Log in',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xffe11d48),
+                                  ),
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              ),
+                            )
+                          ],
+                        ),
+                        Container(
+                          height: 50,
+                        )
+                      ],
+
                     ),
+
                   )
                 else
                   GestureDetector(
