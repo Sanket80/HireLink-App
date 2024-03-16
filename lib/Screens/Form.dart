@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hirelink/Screens/HomeScreen.dart';
 import 'package:hirelink/Widgets/text_field_input.dart';
 
 class FormScreen extends StatefulWidget {
@@ -604,7 +605,13 @@ class _FormScreenState extends State<FormScreen> {
                             width: double.infinity,
                             height: 50,
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(context, MaterialPageRoute(
+                                  builder: (context) {
+                                    return HomeScreen();
+                                  },
+                                ));
+                              },
                               child: Text(
                                 'Submit',
                                 style: TextStyle(
