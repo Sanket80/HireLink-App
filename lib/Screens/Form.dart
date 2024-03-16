@@ -383,6 +383,13 @@ class _FormScreenState extends State<FormScreen> {
                           });
                         }
                       },
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.black, // Background color
+                        onPrimary: Colors.white, // Text color
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10), // Border radius
+                        ),
+                      ),
                       child: Text('Add Certification'),
                     ),
                     // Display added certifications
@@ -462,6 +469,13 @@ class _FormScreenState extends State<FormScreen> {
                           });
                         }
                       },
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.black, // Background color
+                        onPrimary: Colors.white, // Text color
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10), // Border radius
+                        ),
+                      ),
                       child: Text('Add Project'),
                     ),
                     // Display added projects
@@ -533,6 +547,13 @@ class _FormScreenState extends State<FormScreen> {
                           });
                         }
                       },
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.black, // Background color
+                        onPrimary: Colors.white, // Text color
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10), // Border radius
+                        ),
+                      ),
                       child: Text('Add Achievement'),
                     ),
                     // Display added achievements

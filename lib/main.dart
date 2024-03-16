@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'HireLink',
-      home: SplashScreen(),
+      home: const SplashScreen(),
     );
   }
 }

@@ -101,7 +101,7 @@ class LoginScreen extends StatelessWidget {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => SignUpScreen(),
+                          builder: (context) => onBoardingScreen(),
                         ),);
                     },
                     child: Container(
