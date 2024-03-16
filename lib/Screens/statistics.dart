@@ -21,10 +21,22 @@ class _StatisticsPageState extends State<StatisticsPage> {
       appBar: AppBar(
         title: const Text('Statistics'),
       ),
-      body: Center(
-        child: SizedBox(
-          height: 400,
-            child: MyBarGraph(salary: salary),),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Center(
+            child: SizedBox(
+              height: 400,
+              child: MyBarGraph(salary: salary),
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Computer Science Domain Salaries Overview',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+          ),
+        ],
       ),
       bottomNavigationBar: Container(
         color: Colors.black,
@@ -46,7 +58,12 @@ class _StatisticsPageState extends State<StatisticsPage> {
                   setState(() {
                     _selectedIndex = 0;
                   });
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen(),),);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomeScreen(),
+                    ),
+                  );
                 },
               ),
               GButton(

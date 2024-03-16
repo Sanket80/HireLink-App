@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hirelink/Screens/SignUpScreen.dart';
 import 'package:hirelink/Screens/onBoarding.dart';
 import 'package:hirelink/Widgets/text_field_input.dart';
 
@@ -100,7 +101,7 @@ class LoginScreen extends StatelessWidget {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => onBoardingScreen(),
+                          builder: (context) => SignUpScreen(),
                         ),);
                     },
                     child: Container(
