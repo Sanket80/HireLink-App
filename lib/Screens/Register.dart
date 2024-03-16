@@ -33,8 +33,8 @@ class _RegisterState extends State<Register> {
     }
   }
 
-  // Function to upload resume to MongoDB database
-  Future<void> uploadResumeToMongoDB() async {
+
+  Future<void> submitResumeToBackend() async {
     if (_selectedPdfFilePath != null) {
       try {
         // Read the PDF file as bytes
@@ -45,33 +45,31 @@ class _RegisterState extends State<Register> {
         String base64String = base64Encode(pdfBytes);
 
         // Prepare the request body
-        Map<String, dynamic> requestBody = {
-          'resume': base64String,
+        Map<String, dynamic> formData = {
+          'file': base64String,
         };
 
         // Send POST request to the backend API
         var response = await http.post(
-          Uri.parse('https://192.168.0.102:3000'), // Replace with your backend API URL
-          body: jsonEncode(requestBody),
+          Uri.parse('http://192.168.194.134:3000/api/extract/'),
+          body: jsonEncode(formData),
           headers: {'Content-Type': 'application/json'},
         );
 
         if (response.statusCode == 200) {
-          // Resume uploaded successfully
-          print('Resume uploaded successfully');
+          // File uploaded successfully
+          print('File uploaded successfully');
         } else {
-          // Failed to upload resume
-          print('Failed to upload resume: ${response.body}');
+          // File upload failed
+          print('File upload failed: ${response.body}');
         }
       } catch (e) {
         // Handle errors
-        print('Error uploading resume: $e');
+        print('Error uploading file: $e');
       }
-    } else {
-      // No PDF file selected
-      print('No PDF file selected.');
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -118,8 +116,7 @@ class _RegisterState extends State<Register> {
                   SizedBox(height: 150),
                   GestureDetector(
                     onTap: () {
-                      // Call the uploadResumeToMongoDB function
-                      uploadResumeToMongoDB();
+                      submitResumeToBackend();
                       Navigator.push(context, MaterialPageRoute(
                         builder: (context) {
                           return FormScreen();

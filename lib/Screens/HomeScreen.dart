@@ -20,6 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
       role: 'Sr. User Experience Designer',
       salary: const SalaryRange(minSalary: 85000, maxSalary: 120000),
       postedDaysAgo: 2,
+      imageLink: 'assets/Google.png', // Replace with actual image link
     ),
     Job(
       company: 'Airbnb',
@@ -27,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
       role: 'Sr. Fullstack Developer',
       salary: const SalaryRange(minSalary: 75000, maxSalary: 125000),
       postedDaysAgo: 2,
+      imageLink: 'assets/airbnb.png', // Replace with actual image link
     ),
     Job(
       company: 'Slack',
@@ -34,35 +36,38 @@ class _HomeScreenState extends State<HomeScreen> {
       role: 'Sr. Software Engineer',
       salary: const SalaryRange(minSalary: 90000, maxSalary: 150000),
       postedDaysAgo: 2,
+      imageLink: 'assets/slack.png', // Replace with actual image link
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('HomePage'),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            child: Text(
-              'Get Your Dream Job Here!',
-              style: TextStyle(fontSize: 34, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
+      appBar: AppBar(backgroundColor: Colors.grey[200],),
+      body: Container(
+        color: Colors.grey[200],
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: Text(
+                'Featured Jobs',
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.left,
+              ),
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: jobs.length,
-              itemBuilder: (context, index) {
-                final job = jobs[index];
-                return JobCard(job: job);
-              },
+
+            Expanded(
+              child: ListView.builder(
+                itemCount: jobs.length,
+                itemBuilder: (context, index) {
+                  final job = jobs[index];
+                  return JobCard(job: job);
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       bottomNavigationBar: Container(
         color: Colors.black,
@@ -130,49 +135,64 @@ class JobCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+      child: GestureDetector(
+        onTap: () {
+          // Add your onTap function here
+        },
+        child: Card(
+          color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  children: [
+                    Image.asset(job.imageLink, height: 50, width: 50,),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          job.company,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          job.location,
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    const Icon(Icons.bookmark_add_outlined),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 Text(
-                  job.company,
+                  job.role,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Spacer(),
-                const Icon(Icons.bookmark_add_outlined),
+                const SizedBox(height: 4),
+                Text(
+                  '\$${job.salary.minSalary} - \$${job.salary.maxSalary}',
+                  style: const TextStyle(color: Colors.black54),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Posted on ${job.postedDaysAgo} days ago',
+                  style: const TextStyle(color: Colors.grey),
+                ),
               ],
             ),
-            Text(
-              job.location,
-              style: const TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              job.role,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '\$${job.salary.minSalary} - \$${job.salary.maxSalary}',
-              style: const TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Posted on ${job.postedDaysAgo} days ago',
-              style: const TextStyle(color: Colors.grey),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -185,6 +205,7 @@ class Job {
   final String role;
   final SalaryRange salary;
   final int postedDaysAgo;
+  final String imageLink;
 
   Job({
     required this.company,
@@ -192,6 +213,7 @@ class Job {
     required this.role,
     required this.salary,
     required this.postedDaysAgo,
+    required this.imageLink,
   });
 }
 
