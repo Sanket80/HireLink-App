@@ -4,7 +4,7 @@ HireLink for Candidates is a cutting-edge job application platform designed to s
 
 Moreover, HireLink empowers candidates with insights into job statistics, allowing them to make informed decisions. Additionally, a user-friendly chatbot feature is available to address any doubts or queries promptly, providing invaluable assistance throughout the application process. With HireLink for Candidates, finding your dream job has never been easier.
 
-![Logo](assets/hirelink_logo.png)
+![Logo](assets/inverted_logo.png)
 
 
 
