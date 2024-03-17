@@ -1,20 +1,18 @@
-# Hirelink
-<<<<<<< HEAD
+<div style="text-align:center;">
+    <img src="assets/inverted_logo.png" alt="Logo" height="100" width="100"> <h1>Hirelink</h1>
+</div>
+
+
+
+
 
 HireLink for Candidates is a cutting-edge job application platform designed to streamline the hiring journey for both job seekers and recruiters. By offering a seamless experience, candidates can effortlessly upload their resumes, while the platform automatically extracts pertinent details to create comprehensive profiles. This eliminates the tedious task of manual data entry, ensuring a quicker and more efficient process.
 
 Moreover, HireLink empowers candidates with insights into job statistics, allowing them to make informed decisions. Additionally, a user-friendly chatbot feature is available to address any doubts or queries promptly, providing invaluable assistance throughout the application process. With HireLink for Candidates, finding your dream job has never been easier.
 
-![Logo](assets/inverted_logo.png)
+## App Preview
 
 
-=======
-
-HireLink for Candidates is a cutting-edge job application platform designed to streamline the hiring journey for both job seekers and recruiters. By offering a seamless experience, candidates can effortlessly upload their resumes, while the platform automatically extracts pertinent details to create comprehensive profiles. This eliminates the tedious task of manual data entry, ensuring a quicker and more efficient process.
-
-Moreover, HireLink empowers candidates with insights into job statistics, allowing them to make informed decisions. Additionally, a user-friendly chatbot feature is available to address any doubts or queries promptly, providing invaluable assistance throughout the application process. With HireLink for Candidates, finding your dream job has never been easier.
-
-![Logo](assets/inverted_logo.png)
 
 ## Getting Started
 
