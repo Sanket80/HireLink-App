@@ -1,29 +1,47 @@
-# Hirelink
+<div style="text-align:center;">
+    <img src="assets/inverted_logo.png" alt="Logo" height="100" width="100"> <h1>Hirelink</h1>
+</div>
+
 
 HireLink for Candidates is a cutting-edge job application platform designed to streamline the hiring journey for both job seekers and recruiters. By offering a seamless experience, candidates can effortlessly upload their resumes, while the platform automatically extracts pertinent details to create comprehensive profiles. This eliminates the tedious task of manual data entry, ensuring a quicker and more efficient process.
 
 Moreover, HireLink empowers candidates with insights into job statistics, allowing them to make informed decisions. Additionally, a user-friendly chatbot feature is available to address any doubts or queries promptly, providing invaluable assistance throughout the application process. With HireLink for Candidates, finding your dream job has never been easier.
 
-![Logo](assets/inverted_logo.png)
+## Objectives
 
+1. **Registration with PDF**: Candidates can register on the platform by uploading their resumes in PDF format.
+   
+2. **PDF Text Parsing**: The system automatically parses text from uploaded PDF resumes to extract relevant information.
 
-=======
+3. **Profile Creation**: Based on the parsed text, the system creates direct profiles for candidates, simplifying the application process.
 
-HireLink for Candidates is a cutting-edge job application platform designed to streamline the hiring journey for both job seekers and recruiters. By offering a seamless experience, candidates can effortlessly upload their resumes, while the platform automatically extracts pertinent details to create comprehensive profiles. This eliminates the tedious task of manual data entry, ensuring a quicker and more efficient process.
+4. **Job Offered Screen**: Candidates can view job offers from recruiters on the platform.
 
-Moreover, HireLink empowers candidates with insights into job statistics, allowing them to make informed decisions. Additionally, a user-friendly chatbot feature is available to address any doubts or queries promptly, providing invaluable assistance throughout the application process. With HireLink for Candidates, finding your dream job has never been easier.
+5. **Statistics**: Candidates have access to statistics related to job offers, application status, etc.
 
-![Logo](assets/inverted_logo.png)
+6. **Chat Bot**: A chat bot is available to assist candidates in clearing doubts and providing assistance related to the hiring process.
 
-## Getting Started
+## Stack
 
-This project is a starting point for a Flutter application.
+- Flutter: Frontend development framework for building cross-platform applications.
+- MongoDB: NoSQL database used for storing candidate profiles, job offers, and application data.
+- Node.js: Backend server environment for handling HTTP requests, PDF parsing, and database interactions.
 
-A few resources to get you started if this is your first Flutter project:
+## Installation
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+1. Clone the repository:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+   ```bash
+   git clone https://github.com/your-username/hirelink.git
+
+2. flutter pub get:
+
+   ```bash
+   flutter pub get
+
+3. Run the app::
+
+   ```bash
+   flutter pub get
+
+## Screenshots
