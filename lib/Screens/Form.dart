@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:hirelink/Screens/HomeScreen.dart';
 import 'package:hirelink/Widgets/text_field_input.dart';
+import 'package:http/http.dart' as http;
+
+import '../utils/ip.dart';
 
 class FormScreen extends StatefulWidget {
   const FormScreen({super.key});
@@ -9,13 +14,89 @@ class FormScreen extends StatefulWidget {
   State<FormScreen> createState() => _FormScreenState();
 }
 
-class CertificationEntry {
+class ResumeInformation {
+  ContactInformation contactInformation;
+  String summary;
+  List<Education> education;
+  List<WorkExperience> workExperience;
+  List<String> skills;
+  List<Certification> certifications;
+  List<ProjectEntry> projects;
+  List<AchievementEntry> achievements;
+  AdditionalInformation additionalInformation;
+  Security security;
+
+  ResumeInformation({
+    required this.contactInformation,
+    required this.summary,
+    required this.education,
+    required this.workExperience,
+    required this.skills,
+    required this.certifications,
+    required this.projects,
+    required this.achievements,
+    required this.additionalInformation,
+    required this.security,
+  });
+}
+
+class ContactInformation {
+  String firstName;
+  String lastName;
+  String email;
+  String phone;
+  String address;
+
+  ContactInformation({
+    required this.firstName,
+    required this.lastName,
+    required this.email,
+    required this.phone,
+    required this.address,
+  });
+}
+
+class Education {
+  String school;
+  String degree;
+  String major;
+  String graduationDate;
+  String aggregate;
+
+  Education({
+    required this.school,
+    required this.degree,
+    required this.major,
+    required this.graduationDate,
+    required this.aggregate,
+  });
+}
+
+class WorkExperience {
+  String company;
+  String jobTitle;
+  String jobLocation;
+  String jobStartDate;
+  String jobEndDate;
+  String jobDescription;
+
+  WorkExperience({
+    required this.company,
+    required this.jobTitle,
+    required this.jobLocation,
+    required this.jobStartDate,
+    required this.jobEndDate,
+    required this.jobDescription,
+  });
+}
+
+class Certification {
   String certification;
   String issuingOrganization;
   String issueDate;
   String expiryDate;
 
-  CertificationEntry({
+  Certification({
     required this.certification,
     required this.issuingOrganization,
     required this.issueDate,
@@ -42,6 +123,30 @@ class AchievementEntry {
   AchievementEntry({
     required this.title,
     required this.date,
+  });
+}
+
+class AdditionalInformation {
+  String languages;
+  String volunteerExperience;
+  String publications;
+  String interests;
+
+  AdditionalInformation({
+    required this.languages,
+    required this.volunteerExperience,
+    required this.publications,
+    required this.interests,
+  });
+}
+
+class Security {
+  String password;
+  String confirmPassword;
+
+  Security({
+    required this.password,
+    required this.confirmPassword,
   });
 }
 
@@ -83,11 +188,157 @@ class _FormScreenState extends State<FormScreen> {
   final TextEditingController _PublicationsController = TextEditingController();
   final TextEditingController _InterestsController = TextEditingController();
 
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPassController = TextEditingController();
+
   final TextEditingController _textEditingController = TextEditingController();
   final List<String> _skills = [];
-  final List<CertificationEntry> _certifications = [];
+  final List<Certification> _certifications = [];
   final List<ProjectEntry> _projects = [];
   final List<AchievementEntry> _achievements = [];
+  bool _isLoading = false;
+
+  // Register user to the backend
+  void _registerUser() async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+      if (_firstNameController.text.isEmpty ||
+          _lastNameController.text.isEmpty ||
+          _emailController.text.isEmpty ||
+          _phoneController.text.isEmpty ||
+          _passwordController.text.isEmpty ||
+          _confirmPassController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please fill the reqired fields'),
+            backgroundColor: Color(0xffe11d48),
+          ),
+        );
+        return;
+      }
+
+      var contactInformationJson =
+        {
+          'firstName': _firstNameController.text.trim(),
+          'lastName': _lastNameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'address': _AddressController.text.trim(),
+        };
+
+      var educationJson = [
+        {
+          'school': _schoolController.text.trim(),
+          'degree': _degreeController.text.trim(),
+          'major': _majorController.text.trim(),
+          'graduationDate': _graduationDateController.text.trim(),
+          'aggregate': _AggrigateController.text.trim(),
+        }
+      ];
+
+      var workExperienceJson = [
+        {
+          'company': _companyController.text.trim(),
+          'jobTitle': _jobTitleController.text.trim(),
+          'jobLocation': _jobLocationController.text.trim(),
+          'jobStartDate': _jobStartDateController.text.trim(),
+          'jobEndDate': _jobEndDateController.text.trim(),
+          'jobDescription': _jobDescriptionController.text.trim(),
+        }
+      ];
+
+      var skillsJson = _skills;
+
+      var certificationsJson = _certifications.map((certification) {
+        return {
+          'certification': certification.certification,
+          'issuingOrganization': certification.issuingOrganization,
+          'issueDate': certification.issueDate,
+          'expiryDate': certification.expiryDate,
+        };
+      }).toList();
+
+      var projectsJson = _projects.map((project) {
+        return {
+          'title': project.title,
+          'date': project.date,
+          'description': project.description,
+        };
+      }).toList();
+
+      var achievementsJson = _achievements.map((achievement) {
+        return {
+          'title': achievement.title,
+          'date': achievement.date,
+        };
+      }).toList();
+
+      var additionalInformationJson = {
+        'languages': _LanguagesController.text.trim(),
+        'volunteerExperience': _VolunteerExperienceController.text.trim(),
+        'publications': _PublicationsController.text.trim(),
+        'interests': _InterestsController.text.trim(),
+      };
+
+      var securityJson = {
+        'password': _passwordController.text.trim(),
+        'confirmPassword': _confirmPassController.text.trim(),
+      };
+
+      var roleJson = {
+        'data': 'candidate'
+      };
+
+      var resumeInfoJson = {
+        'contactInformation': contactInformationJson,
+        'summary': 'Summary',
+        'education': educationJson,
+        'workExperience': workExperienceJson,
+        'skills': skillsJson,
+        'certifications': certificationsJson,
+        'projects': projectsJson,
+        'achievements': achievementsJson,
+        'additionalInformation': additionalInformationJson,
+        'security': securityJson,
+        'role': roleJson,
+      };
+
+      var url = 'http://$ipAddress:$port/api/register';
+
+      var response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(resumeInfoJson),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Registered successfully'),
+            backgroundColor: Color(0xffe11d48),
+          ),
+        );
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => HomeScreen(),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to register'),
+            backgroundColor: Color(0xffe11d48),
+          ),
+        );
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
 
 
   @override
@@ -211,6 +462,20 @@ class _FormScreenState extends State<FormScreen> {
                       height: 8,
                     ),
                     TextFieldInput(textEditingController: _AddressController, hintText: 'Address', textInputType: TextInputType.text),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    Container(
+                      color: Colors.white,
+                      child: TextField(
+                        maxLines: null, // Set to null for unlimited lines, or specify a number
+                        keyboardType: TextInputType.multiline,
+                        decoration: InputDecoration(
+                          hintText: 'Summary',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
                     SizedBox(
                       height: 16,
                     ),
@@ -369,7 +634,7 @@ class _FormScreenState extends State<FormScreen> {
 
                         if (certification.isNotEmpty && issuingOrganization.isNotEmpty && issueDate.isNotEmpty && expiryDate.isNotEmpty) {
                           setState(() {
-                            _certifications.add(CertificationEntry(
+                            _certifications.add(Certification(
                               certification: certification,
                               issuingOrganization: issuingOrganization,
                               issueDate: issueDate,
@@ -397,7 +662,7 @@ class _FormScreenState extends State<FormScreen> {
                       shrinkWrap: true,
                       itemCount: _certifications.length,
                       itemBuilder: (context, index) {
-                        CertificationEntry certification = _certifications[index];
+                        Certification certification = _certifications[index];
                         return ListTile(
                           title: Text(certification.certification),
                           subtitle: Text(
@@ -616,6 +881,32 @@ class _FormScreenState extends State<FormScreen> {
                     SizedBox(
                       height: 16,
                     ),
+                    Row(
+                      children: [
+                        Icon(Icons.circle_outlined),
+                        const SizedBox(
+                          width: 6,
+                        ),
+                        Text(
+                          'Security',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 6,
+                    ),
+                    TextFieldInput(textEditingController: _passwordController, hintText: 'Password', textInputType: TextInputType.visiblePassword,isPass: true,),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    TextFieldInput(textEditingController: _confirmPassController, hintText: 'Confirm Password', textInputType: TextInputType.visiblePassword,isPass: true,),
+                    SizedBox(
+                      height: 16,
+                    ),
 
 
                     Row(
@@ -627,11 +918,7 @@ class _FormScreenState extends State<FormScreen> {
                             height: 50,
                             child: ElevatedButton(
                               onPressed: () {
-                                Navigator.push(context, MaterialPageRoute(
-                                  builder: (context) {
-                                    return HomeScreen();
-                                  },
-                                ));
+                                _registerUser();
                               },
                               child: Text(
                                 'Submit',

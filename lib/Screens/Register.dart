@@ -7,6 +7,8 @@ import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:hirelink/Screens/Form.dart'; // Import flutter_pdfview package
 import 'package:http/http.dart' as http;
 
+import '../utils/ip.dart';
+
 class Register extends StatefulWidget {
   const Register({Key? key}) : super(key: key);
 
@@ -16,56 +18,52 @@ class Register extends StatefulWidget {
 
 class _RegisterState extends State<Register> {
   String? _selectedPdfFileName;
-  String? _selectedPdfFilePath; // Store the file path of the selected PDF
+  String? _selectedPdfFilePath;
 
   // Function to pick PDF file
   Future<void> _pickPdf() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-    );
+    final result = await FilePicker.platform.pickFiles();
 
     if (result != null) {
       setState(() {
         _selectedPdfFileName = result.files.single.name;
-        _selectedPdfFilePath = result.files.single.path; // Store the file path
+        _selectedPdfFilePath = result.files.single.path;
       });
     }
   }
 
-
-  Future<void> submitResumeToBackend() async {
+  // Function to submit the selected PDF file to the backend in base64 format
+  void submitResumeToBackend() async {
     if (_selectedPdfFilePath != null) {
-      try {
-        // Read the PDF file as bytes
-        File file = File(_selectedPdfFilePath!);
-        List<int> pdfBytes = await file.readAsBytes();
+      final file = File(_selectedPdfFilePath!);
+      final bytes = await file.readAsBytes();
+      final base64 = base64Encode(bytes);
 
-        // Convert PDF bytes to base64
-        String base64String = base64Encode(pdfBytes);
+      var url = 'http://$ipAddress:$port/api/upload-resume';
+      var body = jsonEncode({'resume': base64});
 
-        // Prepare the request body
-        Map<String, dynamic> formData = {
-          'file': base64String,
-        };
+      var response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: body,
+      );
 
-        // Send POST request to the backend API
-        var response = await http.post(
-          Uri.parse('http://192.168.194.134:3000/api/extract/'),
-          body: jsonEncode(formData),
-          headers: {'Content-Type': 'application/json'},
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Resume uploaded successfully'),
+            backgroundColor: Color(0xffe11d48),
+          ),
         );
-
-        if (response.statusCode == 200) {
-          // File uploaded successfully
-          print('File uploaded successfully');
-        } else {
-          // File upload failed
-          print('File upload failed: ${response.body}');
-        }
-      } catch (e) {
-        // Handle errors
-        print('Error uploading file: $e');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to upload resume'),
+            backgroundColor: Color(0xffe11d48),
+          ),
+        );
       }
     }
   }
@@ -117,11 +115,6 @@ class _RegisterState extends State<Register> {
                   GestureDetector(
                     onTap: () {
                       submitResumeToBackend();
-                      Navigator.push(context, MaterialPageRoute(
-                        builder: (context) {
-                          return FormScreen();
-                        },
-                      ));
                     },
                     child: Container(
                       decoration: BoxDecoration(
