@@ -102,10 +102,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   Image.asset('assets/hirelink_logo.png',height: 200,),
                   SizedBox(height: 8),
                   Text(
-                    'AI-Powered Talent Match, Hiring Success Unlocked',
+                    'Unlock your Career with AI Powered Talent Match',
                     style: TextStyle(
                       fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w500,
                       color: Colors.black,
                     ),
                     textAlign: TextAlign.center,

@@ -3,8 +3,11 @@ import 'dart:convert';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:hirelink/Screens/HomeScreen.dart';
 import 'package:hirelink/Screens/statistics.dart';
 import 'package:http/http.dart' as http;
+
+import 'Profile.dart';
 
 class ChatBot extends StatefulWidget {
   const ChatBot({super.key});
@@ -125,6 +128,12 @@ class _ChatBotState extends State<ChatBot> {
                   setState(() {
                     _selectedIndex = 0;
                   });
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomeScreen(),
+                    ),
+                  );
                 },
               ),
               GButton(
@@ -134,7 +143,7 @@ class _ChatBotState extends State<ChatBot> {
                   setState(() {
                     _selectedIndex = 1;
                   });
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (context) => StatisticsPage(),
@@ -149,10 +158,6 @@ class _ChatBotState extends State<ChatBot> {
                   setState(() {
                     _selectedIndex = 2;
                   });
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ChatBot()),
-                  );
                 },
               ),
               GButton(
@@ -162,6 +167,7 @@ class _ChatBotState extends State<ChatBot> {
                   setState(() {
                     _selectedIndex = 3;
                   });
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
                 },
               ),
             ],

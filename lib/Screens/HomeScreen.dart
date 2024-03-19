@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:hirelink/Screens/CompanyDetails.dart';
+import 'package:hirelink/Screens/Profile.dart';
 import 'package:hirelink/Screens/chat_bot.dart';
 import 'package:hirelink/Screens/statistics.dart';
 
@@ -123,12 +124,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
               GButton(
-                icon: Icons.home_work_outlined,
-                text: 'Jobs',
+                icon: Icons.person,
+                text: 'Profile',
                 onPressed: () {
                   setState(() {
                     _selectedIndex = 3;
                   });
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
                 },
               ),
             ],

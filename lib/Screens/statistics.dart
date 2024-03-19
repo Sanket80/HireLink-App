@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:hirelink/Bar%20Graph/bar_graph.dart';
 import 'package:hirelink/Screens/HomeScreen.dart';
+import 'package:hirelink/Screens/Profile.dart';
 
 import 'chat_bot.dart';
 
@@ -103,7 +104,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
                   setState(() {
                     _selectedIndex = 0;
                   });
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (context) => HomeScreen(),
@@ -127,7 +128,10 @@ class _StatisticsPageState extends State<StatisticsPage> {
                   setState(() {
                     _selectedIndex = 2;
                   });
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => ChatBot()),);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => ChatBot()),
+                  );
                 },
               ),
               GButton(
@@ -137,6 +141,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
                   setState(() {
                     _selectedIndex = 3;
                   });
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
                 },
               ),
             ],
