@@ -32,41 +32,57 @@ class _RegisterState extends State<Register> {
     }
   }
 
-  // Function to submit the selected PDF file to the backend in base64 format
+  // Function to submit the selected PDF file to the backend using multipart/form-data
   void submitResumeToBackend() async {
-    if (_selectedPdfFilePath != null) {
-      final file = File(_selectedPdfFilePath!);
-      final bytes = await file.readAsBytes();
-      final base64 = base64Encode(bytes);
+    try {
+      if (_selectedPdfFilePath != null) {
+        final file = File(_selectedPdfFilePath!);
 
-      var url = 'http://$ipAddress:$port/api/upload-resume';
-      var body = jsonEncode({'resume': base64});
+        var request = http.MultipartRequest(
+          'POST',
+          Uri.parse('http://$ipAddress:$port/api/extract'),
+        );
 
-      var response = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: body,
-      );
-
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Resume uploaded successfully'),
-            backgroundColor: Color(0xffe11d48),
+        // Add the file as a File object directly to the request
+        request.files.add(
+          http.MultipartFile(
+            'file',
+            file.readAsBytes().asStream(), // Use asStream() to convert List<int> to Stream<List<int>>
+            file.lengthSync(), // Provide the length of the file
+            filename: _selectedPdfFileName!, // Provide the file name
           ),
         );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to upload resume'),
-            backgroundColor: Color(0xffe11d48),
-          ),
-        );
+
+        var response = await request.send();
+
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Text extracted successfully'),
+              backgroundColor: Color(0xffe11d48),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to extract text'),
+              backgroundColor: Color(0xffe11d48),
+            ),
+          );
+        }
       }
+    } catch (error) {
+      // Handle and log the error
+      print('Error submitting resume: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('An error occurred while submitting the resume'),
+          backgroundColor: Color(0xffe11d48),
+        ),
+      );
     }
   }
+
 
 
   @override
