@@ -340,6 +340,94 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 
+  // Fetch the fields from the backend
+  Future<Map<String, dynamic>> fetchDataFromBackend() async{
+    var url = 'http://$ipAddress:$port/api/register';
+    var response = await http.get(Uri.parse(url));
+
+    if(response.statusCode == 200){
+      var jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    }
+    else{
+      throw Exception('Failed to load data');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchDataFromBackend();
+  }
+
+  Future<void> fetchData() async{
+    try{
+      var data = await fetchDataFromBackend();
+
+      // Set the fetched data to the text controllers
+      _firstNameController.text = data['contactInformation']['firstName'] ?? '';
+      _lastNameController.text = data['contactInformation']['lastName'] ?? '';
+      _emailController.text = data['contactInformation']['email'] ?? '';
+      _phoneController.text = data['contactInformation']['phone'] ?? '';
+      _AddressController.text = data['contactInformation']['address'] ?? '';
+
+      if(data['education'] != null){
+        var educationData = data['education'][0];
+        _schoolController.text = educationData['school'] ?? '';
+        _degreeController.text = educationData['degree'] ?? '';
+        _majorController.text = educationData['major'] ?? '';
+        _graduationDateController.text = educationData['graduationDate'] ?? '';
+        _AggrigateController.text = educationData['aggregate'] ?? '';
+      }
+
+      _skills.addAll(data['skills'] != null ? List<String>.from(data['skills']) : []);
+
+      if(data['certifications'] != null){
+        var certificationsData = data['certifications'];
+        _certifications.clear();
+        _certifications.addAll(certificationsData.map((certification) {
+          return Certification(
+            certification: certification['certification'] ?? '',
+            issuingOrganization: certification['issuingOrganization'] ?? '',
+            issueDate: certification['issueDate'] ?? '',
+            expiryDate: certification['expiryDate'] ?? '',
+          );
+        }).toList());
+      }
+
+      if(data['projects'] != null){
+        var projectsData = data['projects'];
+        _projects.clear();
+        _projects.addAll(projectsData.map((project) {
+          return ProjectEntry(
+            title: project['title'] ?? '',
+            date: project['date'] ?? '',
+            description: project['description'] ?? '',
+          );
+        }).toList());
+      }
+
+      if(data['achievements'] != null){
+        var achievementsData = data['achievements'];
+        _achievements.clear();
+        _achievements.addAll(achievementsData.map((achievement) {
+          return AchievementEntry(
+            title: achievement['title'] ?? '',
+            date: achievement['date'] ?? '',
+          );
+        }).toList());
+      }
+
+      _LanguagesController.text = data['additionalInformation']['languages'] ?? '';
+      _VolunteerExperienceController.text = data['additionalInformation']['volunteerExperience'] ?? '';
+      _PublicationsController.text = data['additionalInformation']['publications'] ?? '';
+      _InterestsController.text = data['additionalInformation']['interests'] ?? '';
+    }
+    catch(e){
+      print(e);
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
