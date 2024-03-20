@@ -1,10 +1,9 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
-import 'package:hirelink/Screens/Form.dart'; // Import flutter_pdfview package
+import 'package:hirelink/Screens/Form.dart';
 import 'package:http/http.dart' as http;
 
 import '../utils/ip.dart';
@@ -32,55 +31,56 @@ class _RegisterState extends State<Register> {
     }
   }
 
-  // Function to submit the selected PDF file to the backend using multipart/form-data
   void submitResumeToBackend() async {
-    try {
-      if (_selectedPdfFilePath != null) {
-        final file = File(_selectedPdfFilePath!);
-
-        var request = http.MultipartRequest(
-          'POST',
-          Uri.parse('http://$ipAddress:$port/api/extract'),
-        );
-
-        // Add the file as a File object directly to the request
-        request.files.add(
-          http.MultipartFile(
-            'file',
-            file.readAsBytes().asStream(), // Use asStream() to convert List<int> to Stream<List<int>>
-            file.lengthSync(), // Provide the length of the file
-            filename: _selectedPdfFileName!, // Provide the file name
-          ),
-        );
-
-        var response = await request.send();
-
-        if (response.statusCode == 200) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Text extracted successfully'),
-              backgroundColor: Color(0xffe11d48),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to extract text'),
-              backgroundColor: Color(0xffe11d48),
-            ),
-          );
-        }
-      }
-    } catch (error) {
-      // Handle and log the error
-      print('Error submitting resume: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('An error occurred while submitting the resume'),
-          backgroundColor: Color(0xffe11d48),
-        ),
-      );
-    }
+    // try {
+    //   if (_selectedPdfFilePath != null) {
+    //     final file = File(_selectedPdfFilePath!);
+    //     print('File path: $_selectedPdfFilePath');
+    //
+    //     var request = http.MultipartRequest(
+    //       'POST',
+    //       Uri.parse('http://$ipAddress:$port/api/extract'),
+    //     );
+    //
+    //     // Add the file as a File object directly to the request
+    //     request.files.add(
+    //       http.MultipartFile(
+    //         'file',
+    //         file.readAsBytes().asStream(), // Use asStream() to convert List<int> to Stream<List<int>>
+    //         file.lengthSync(), // Provide the length of the file
+    //         filename: _selectedPdfFileName!,
+    //       ),
+    //     );
+    //
+    //     var response = await request.send();
+    //
+    //     if (response.statusCode == 200) {
+    //       ScaffoldMessenger.of(context).showSnackBar(
+    //         SnackBar(
+    //           content: Text('Text extracted successfully'),
+    //           backgroundColor: Color(0xffe11d48),
+    //         ),
+    //       );
+    //       Navigator.push(context, MaterialPageRoute(builder: (context) => FormScreen(pdfFilePath: _selectedPdfFilePath!)));
+    //     } else {
+    //       ScaffoldMessenger.of(context).showSnackBar(
+    //         SnackBar(
+    //           content: Text('Failed to extract text'),
+    //           backgroundColor: Color(0xffe11d48),
+    //         ),
+    //       );
+    //     }
+    //   }
+    // } catch (error) {
+    //   // Handle and log the error
+    //   print('Error submitting resume: $error');
+    //   ScaffoldMessenger.of(context).showSnackBar(
+    //     SnackBar(
+    //       content: Text('An error occurred while submitting the resume'),
+    //       backgroundColor: Color(0xffe11d48),
+    //     ),
+    //   );
+    // }
   }
 
 
@@ -131,6 +131,7 @@ class _RegisterState extends State<Register> {
                   GestureDetector(
                     onTap: () {
                       submitResumeToBackend();
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => FormScreen(pdfFilePath: _selectedPdfFilePath!)));
                     },
                     child: Container(
                       decoration: BoxDecoration(

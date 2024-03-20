@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hirelink/Screens/HomeScreen.dart';
@@ -8,7 +9,8 @@ import 'package:http/http.dart' as http;
 import '../utils/ip.dart';
 
 class FormScreen extends StatefulWidget {
-  const FormScreen({super.key});
+  final String pdfFilePath;
+  const FormScreen({super.key, required this.pdfFilePath});
 
   @override
   State<FormScreen> createState() => _FormScreenState();
@@ -151,7 +153,6 @@ class Security {
 }
 
 class _FormScreenState extends State<FormScreen> {
-
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -161,7 +162,8 @@ class _FormScreenState extends State<FormScreen> {
   final TextEditingController _schoolController = TextEditingController();
   final TextEditingController _degreeController = TextEditingController();
   final TextEditingController _majorController = TextEditingController();
-  final TextEditingController _graduationDateController = TextEditingController();
+  final TextEditingController _graduationDateController =
+      TextEditingController();
   final TextEditingController _AggrigateController = TextEditingController();
 
   final TextEditingController _companyController = TextEditingController();
@@ -169,22 +171,30 @@ class _FormScreenState extends State<FormScreen> {
   final TextEditingController _jobLocationController = TextEditingController();
   final TextEditingController _jobStartDateController = TextEditingController();
   final TextEditingController _jobEndDateController = TextEditingController();
-  final TextEditingController _jobDescriptionController = TextEditingController();
+  final TextEditingController _jobDescriptionController =
+      TextEditingController();
 
-  final TextEditingController _certificationController = TextEditingController();
-  final TextEditingController _issuingOrganizationController = TextEditingController();
+  final TextEditingController _certificationController =
+      TextEditingController();
+  final TextEditingController _issuingOrganizationController =
+      TextEditingController();
   final TextEditingController _issueDateController = TextEditingController();
-  final TextEditingController _expirationDateController = TextEditingController();
+  final TextEditingController _expirationDateController =
+      TextEditingController();
 
   final TextEditingController _ProjecttitleController = TextEditingController();
-  final TextEditingController _ProjectDescriptionController = TextEditingController();
+  final TextEditingController _ProjectDescriptionController =
+      TextEditingController();
   final TextEditingController _ProjectDateController = TextEditingController();
 
-  final TextEditingController _AchievementtitleController = TextEditingController();
-  final TextEditingController _AchievementDateController = TextEditingController();
+  final TextEditingController _AchievementtitleController =
+      TextEditingController();
+  final TextEditingController _AchievementDateController =
+      TextEditingController();
 
   final TextEditingController _LanguagesController = TextEditingController();
-  final TextEditingController _VolunteerExperienceController = TextEditingController();
+  final TextEditingController _VolunteerExperienceController =
+      TextEditingController();
   final TextEditingController _PublicationsController = TextEditingController();
   final TextEditingController _InterestsController = TextEditingController();
 
@@ -219,14 +229,13 @@ class _FormScreenState extends State<FormScreen> {
         return;
       }
 
-      var contactInformationJson =
-        {
-          'firstName': _firstNameController.text.trim(),
-          'lastName': _lastNameController.text.trim(),
-          'email': _emailController.text.trim(),
-          'phone': _phoneController.text.trim(),
-          'address': _AddressController.text.trim(),
-        };
+      var contactInformationJson = {
+        'firstName': _firstNameController.text.trim(),
+        'lastName': _lastNameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'address': _AddressController.text.trim(),
+      };
 
       var educationJson = [
         {
@@ -287,9 +296,7 @@ class _FormScreenState extends State<FormScreen> {
         'confirmPassword': _confirmPassController.text.trim(),
       };
 
-      var roleJson = {
-        'data': 'candidate'
-      };
+      var roleJson = {'data': 'candidate'};
 
       var resumeInfoJson = {
         'contactInformation': contactInformationJson,
@@ -340,29 +347,77 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 
-  // Fetch the fields from the backend
-  Future<Map<String, dynamic>> fetchDataFromBackend() async{
+// Fetch the fields from the backend
+  Future<Map<String, dynamic>> fetchDataFromBackend() async {
     var url = 'http://$ipAddress:$port/api/register';
-    var response = await http.get(Uri.parse(url));
+    var response = await http.post(Uri.parse(url));
 
-    if(response.statusCode == 200){
+    if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
+      print(jsonResponse);
       return jsonResponse;
-    }
-    else{
+    } else {
       throw Exception('Failed to load data');
     }
   }
 
+  Future<Map<String, dynamic>>? _fetchDataFuture;
+
   @override
   void initState() {
     super.initState();
-    fetchDataFromBackend();
+    _fetchDataFuture = fetchData();
   }
 
-  Future<void> fetchData() async{
-    try{
+
+
+  Future<Map<String, dynamic>> fetchData() async {
+    try {
+      if (widget.pdfFilePath != null) {
+        File pdfFile = File(widget.pdfFilePath);
+        print("File Name:" + pdfFile.path);
+
+        var request = http.MultipartRequest(
+          'POST',
+          Uri.parse('http://$ipAddress:$port/api/extract'),
+        );
+        print("Request: " + request.toString());
+
+        // Add the file as a File object directly to the request
+        request.files.add(
+          http.MultipartFile(
+            'file',
+            pdfFile.readAsBytes().asStream(),
+            pdfFile.lengthSync(), // Provide the length of the file
+            filename: pdfFile.path.split('/').last,
+          ),
+        );
+
+        var response = await request.send();
+
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Text extracted successfully'),
+              backgroundColor: Color(0xffe11d48),
+            ),
+          );
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) =>
+                      FormScreen(pdfFilePath: widget.pdfFilePath!)));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to extract text'),
+              backgroundColor: Color(0xffe11d48),
+            ),
+          );
+        }
+      }
       var data = await fetchDataFromBackend();
+      print('Response Body: $data');
 
       // Set the fetched data to the text controllers
       _firstNameController.text = data['contactInformation']['firstName'] ?? '';
@@ -371,7 +426,7 @@ class _FormScreenState extends State<FormScreen> {
       _phoneController.text = data['contactInformation']['phone'] ?? '';
       _AddressController.text = data['contactInformation']['address'] ?? '';
 
-      if(data['education'] != null){
+      if (data['education'] != null) {
         var educationData = data['education'][0];
         _schoolController.text = educationData['school'] ?? '';
         _degreeController.text = educationData['degree'] ?? '';
@@ -380,9 +435,10 @@ class _FormScreenState extends State<FormScreen> {
         _AggrigateController.text = educationData['aggregate'] ?? '';
       }
 
-      _skills.addAll(data['skills'] != null ? List<String>.from(data['skills']) : []);
+      _skills.addAll(
+          data['skills'] != null ? List<String>.from(data['skills']) : []);
 
-      if(data['certifications'] != null){
+      if (data['certifications'] != null) {
         var certificationsData = data['certifications'];
         _certifications.clear();
         _certifications.addAll(certificationsData.map((certification) {
@@ -395,7 +451,7 @@ class _FormScreenState extends State<FormScreen> {
         }).toList());
       }
 
-      if(data['projects'] != null){
+      if (data['projects'] != null) {
         var projectsData = data['projects'];
         _projects.clear();
         _projects.addAll(projectsData.map((project) {
@@ -407,7 +463,7 @@ class _FormScreenState extends State<FormScreen> {
         }).toList());
       }
 
-      if(data['achievements'] != null){
+      if (data['achievements'] != null) {
         var achievementsData = data['achievements'];
         _achievements.clear();
         _achievements.addAll(achievementsData.map((achievement) {
@@ -418,625 +474,777 @@ class _FormScreenState extends State<FormScreen> {
         }).toList());
       }
 
-      _LanguagesController.text = data['additionalInformation']['languages'] ?? '';
-      _VolunteerExperienceController.text = data['additionalInformation']['volunteerExperience'] ?? '';
-      _PublicationsController.text = data['additionalInformation']['publications'] ?? '';
-      _InterestsController.text = data['additionalInformation']['interests'] ?? '';
-    }
-    catch(e){
+      _LanguagesController.text =
+          data['additionalInformation']['languages'] ?? '';
+      _VolunteerExperienceController.text =
+          data['additionalInformation']['volunteerExperience'] ?? '';
+      _PublicationsController.text =
+          data['additionalInformation']['publications'] ?? '';
+      _InterestsController.text =
+          data['additionalInformation']['interests'] ?? '';
+
+      return data;
+    } catch (e) {
       print(e);
+      throw e;
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 20,
-                  right: 16,
-                  top: 8,
-                ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: 16,
-                        bottom: 4,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment
-                            .spaceBetween, // or MainAxisAlignment.spaceAround
-                        children: [
-                          Row(
-                            children: [
-                              Image.asset(
-                                'assets/hirelink_logo.png',
-                                width: 40,
-                                height: 40,
+    // return FutureBuilder(
+    //     future: _fetchDataFuture,
+    //     builder: (context, snapshot) {
+    //       if (snapshot.connectionState == ConnectionState.waiting) {
+    //         // While waiting for the data to be fetched, display a loading indicator
+    //         return Scaffold(
+    //           body: Center(
+    //             child: CircularProgressIndicator(),
+    //           ),
+    //         );
+    //       } else if (snapshot.hasError) {
+    //         // If an error occurred during data fetching, display an error message
+    //         return Scaffold(
+    //           body: Center(
+    //             child: Text('Error: ${snapshot.error}'),
+    //           ),
+    //         );
+    //       } else {
+            return Scaffold(
+              body: SafeArea(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 20,
+                          right: 16,
+                          top: 8,
+                        ),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: 16,
+                                bottom: 4,
                               ),
-                              const SizedBox(
-                                width: 6,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment
+                                    .spaceBetween, // or MainAxisAlignment.spaceAround
+                                children: [
+                                  Row(
+                                    children: [
+                                      Image.asset(
+                                        'assets/hirelink_logo.png',
+                                        width: 40,
+                                        height: 40,
+                                      ),
+                                      const SizedBox(
+                                        width: 6,
+                                      ),
+                                      const Text(
+                                        'HireLink',
+                                        style: TextStyle(
+                                          fontSize: 30,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                              const Text(
-                                'HireLink',
-                                style: TextStyle(
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.bold,
+                            ),
+                            SizedBox(
+                              height: 18,
+                            ),
+                            Row(
+                              children: [
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: const Text(
+                                    'Edit Profile',
+                                    style: TextStyle(
+                                      fontSize: 25,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 6,
+                            ),
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'Please fill out the form below for missing fields',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.grey,
+                                      ),
+                                      softWrap: true,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 16,
+                            ),
+                            Row(
+                              children: [
+                                Icon(Icons.circle_outlined),
+                                const SizedBox(
+                                  width: 6,
+                                ),
+                                Text(
+                                  'Contact Information',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 6,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _firstNameController,
+                                hintText: 'First Name',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _lastNameController,
+                                hintText: 'Last Name',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _emailController,
+                                hintText: 'Email',
+                                textInputType: TextInputType.emailAddress),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _phoneController,
+                                hintText: 'Phone',
+                                textInputType: TextInputType.phone),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _AddressController,
+                                hintText: 'Address',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            Container(
+                              color: Colors.white,
+                              child: TextField(
+                                maxLines:
+                                    null, // Set to null for unlimited lines, or specify a number
+                                keyboardType: TextInputType.multiline,
+                                decoration: InputDecoration(
+                                  hintText: 'Summary',
+                                  border: OutlineInputBorder(),
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 18,
-                    ),
-                    Row(
-                      children: [
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: const Text(
-                            'Edit Profile',
-                            style: TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.bold,
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Please fill out the form below for missing fields',
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Colors.grey,
-                              ),
-                              softWrap: true,
+                            SizedBox(
+                              height: 16,
                             ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 16,
-                    ),
-                    Row(
-                      children: [
-                        Icon(Icons.circle_outlined),
-                        const SizedBox(
-                          width: 6,
-                        ),
-                        Text(
-                          'Contact Information',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    TextFieldInput(textEditingController: _firstNameController, hintText: 'First Name', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _lastNameController, hintText: 'Last Name', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _emailController, hintText: 'Email', textInputType: TextInputType.emailAddress),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _phoneController, hintText: 'Phone', textInputType: TextInputType.phone),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _AddressController, hintText: 'Address', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    Container(
-                      color: Colors.white,
-                      child: TextField(
-                        maxLines: null, // Set to null for unlimited lines, or specify a number
-                        keyboardType: TextInputType.multiline,
-                        decoration: InputDecoration(
-                          hintText: 'Summary',
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 16,
-                    ),
-                    Row(
-                      children: [
-                        Icon(Icons.circle_outlined),
-                        const SizedBox(
-                          width: 6,
-                        ),
-                        Text(
-                          'Education',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    TextFieldInput(textEditingController: _schoolController, hintText: 'School', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _degreeController, hintText: 'Degree', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _majorController, hintText: 'Major', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _graduationDateController, hintText: 'Graduation Date', textInputType: TextInputType.datetime),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _AggrigateController, hintText: 'Aggrigate Marks', textInputType: TextInputType.number),
-                    SizedBox(
-                      height: 16,
-                    ),
-                    Row(
-                      children: [
-                        Icon(Icons.circle_outlined),
-                        const SizedBox(
-                          width: 6,
-                        ),
-                        Text(
-                          'Work Experience',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    TextFieldInput(textEditingController: _companyController, hintText: 'Company', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _jobTitleController, hintText: 'Job Title', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _jobLocationController, hintText: 'Job Location', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _jobStartDateController, hintText: 'Job Start Date', textInputType: TextInputType.datetime),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _jobEndDateController, hintText: 'Job End Date', textInputType: TextInputType.datetime),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _jobDescriptionController, hintText: 'Job Description', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 16,
-                    ),
-                    TextField(
-                      controller: _textEditingController,
-                      onSubmitted: (value) {
-                        if (value.isNotEmpty) {
-                          setState(() {
-                            _skills.add(value.trim());
-                            _textEditingController.clear(); // Clear the text field after adding skill
-                          });
-                        }
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Enter a skill',
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: _skills.asMap().entries.map((entry) {
-                        return Chip(
-                          label: Text(entry.value),
-                          onDeleted: () {
-                            setState(() {
-                              _skills.removeAt(entry.key);
-                            });
-                          },
-                        );
-                      }).toList(),
-                    ),
-                    SizedBox(
-                      height: 16,
-                    ),
-                    Row(
-                      children: [
-                        Icon(Icons.circle_outlined),
-                        const SizedBox(
-                          width: 6,
-                        ),
-                        Text(
-                          'Certifications',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    TextFieldInput(textEditingController: _certificationController, hintText: 'Certification', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _issuingOrganizationController, hintText: 'Issuing Organization', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _issueDateController, hintText: 'Issue Date', textInputType: TextInputType.datetime),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _expirationDateController, hintText: 'Expiration Date', textInputType: TextInputType.datetime),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        String certification = _certificationController.text.trim();
-                        String issuingOrganization = _issuingOrganizationController.text.trim();
-                        String issueDate = _issueDateController.text.trim();
-                        String expiryDate = _expirationDateController.text.trim();
-
-                        if (certification.isNotEmpty && issuingOrganization.isNotEmpty && issueDate.isNotEmpty && expiryDate.isNotEmpty) {
-                          setState(() {
-                            _certifications.add(Certification(
-                              certification: certification,
-                              issuingOrganization: issuingOrganization,
-                              issueDate: issueDate,
-                              expiryDate: expiryDate,
-                            ));
-                            // Clear input fields
-                            _certificationController.clear();
-                            _issuingOrganizationController.clear();
-                            _issueDateController.clear();
-                            _expirationDateController.clear();
-                          });
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        primary: Colors.black, // Background color
-                        onPrimary: Colors.white, // Text color
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10), // Border radius
-                        ),
-                      ),
-                      child: Text('Add Certification'),
-                    ),
-                    // Display added certifications
-                    ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: _certifications.length,
-                      itemBuilder: (context, index) {
-                        Certification certification = _certifications[index];
-                        return ListTile(
-                          title: Text(certification.certification),
-                          subtitle: Text(
-                            'Issuing Organization: ${certification.issuingOrganization}\n'
-                                'Issue Date: ${certification.issueDate}\n'
-                                'Expiry Date: ${certification.expiryDate}',
-                          ),
-                          trailing: IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () {
-                              setState(() {
-                                _certifications.removeAt(index);
-                              });
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                    SizedBox(
-                      height: 16,
-                    ),
-                    Row(
-                      children: [
-                        Icon(Icons.circle_outlined),
-                        const SizedBox(
-                          width: 6,
-                        ),
-                        Text(
-                          'Projects',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    TextFieldInput(textEditingController: _ProjecttitleController, hintText: 'Title', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _ProjectDateController, hintText: 'Date', textInputType: TextInputType.datetime),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _ProjectDescriptionController, hintText: 'Description', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        String title = _ProjecttitleController.text.trim();
-                        String date = _ProjectDateController.text.trim();
-                        String description = _ProjectDescriptionController.text.trim();
-
-                        if (title.isNotEmpty && date.isNotEmpty && description.isNotEmpty) {
-                          setState(() {
-                            _projects.add(ProjectEntry(
-                              title: title,
-                              date: date,
-                              description: description,
-                            ));
-                            // Clear input fields
-                            _ProjecttitleController.clear();
-                            _ProjectDateController.clear();
-                            _ProjectDescriptionController.clear();
-                          });
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        primary: Colors.black, // Background color
-                        onPrimary: Colors.white, // Text color
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10), // Border radius
-                        ),
-                      ),
-                      child: Text('Add Project'),
-                    ),
-                    // Display added projects
-                    ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: _projects.length,
-                      itemBuilder: (context, index) {
-                        ProjectEntry project = _projects[index];
-                        return ListTile(
-                          title: Text(project.title),
-                          subtitle: Text(
-                            'Date: ${project.date}\n'
-                                'Description: ${project.description}',
-                          ),
-                          trailing: IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () {
-                              setState(() {
-                                _projects.removeAt(index);
-                              });
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                    SizedBox(
-                      height: 16,
-                    ),
-                    Row(
-                      children: [
-                        Icon(Icons.circle_outlined),
-                        const SizedBox(
-                          width: 6,
-                        ),
-                        Text(
-                          'Achievements',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    TextFieldInput(textEditingController: _AchievementtitleController, hintText: 'Title', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _AchievementDateController, hintText: 'Date', textInputType: TextInputType.datetime),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        String title = _AchievementtitleController.text.trim();
-                        String date = _AchievementDateController.text.trim();
-
-                        if (title.isNotEmpty && date.isNotEmpty) {
-                          setState(() {
-                            _achievements.add(AchievementEntry(
-                              title: title,
-                              date: date,
-                            ));
-                            // Clear input fields
-                            _AchievementtitleController.clear();
-                            _AchievementDateController.clear();
-                          });
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        primary: Colors.black, // Background color
-                        onPrimary: Colors.white, // Text color
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10), // Border radius
-                        ),
-                      ),
-                      child: Text('Add Achievement'),
-                    ),
-                    // Display added achievements
-                    ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: _achievements.length,
-                      itemBuilder: (context, index) {
-                        AchievementEntry achievement = _achievements[index];
-                        return ListTile(
-                          title: Text(achievement.title),
-                          subtitle: Text(
-                            'Date: ${achievement.date}',
-                          ),
-                          trailing: IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: () {
-                              setState(() {
-                                _achievements.removeAt(index);
-                              });
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                    SizedBox(
-                      height: 16,
-                    ),
-
-                    Row(
-                      children: [
-                        Icon(Icons.circle_outlined),
-                        const SizedBox(
-                          width: 6,
-                        ),
-                        Text(
-                          'Additional Information',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    TextFieldInput(textEditingController: _LanguagesController, hintText: 'Languages', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _VolunteerExperienceController, hintText: 'Volunteer Experience', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _PublicationsController, hintText: 'Publications', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _InterestsController, hintText: 'Interests', textInputType: TextInputType.text),
-                    SizedBox(
-                      height: 16,
-                    ),
-                    Row(
-                      children: [
-                        Icon(Icons.circle_outlined),
-                        const SizedBox(
-                          width: 6,
-                        ),
-                        Text(
-                          'Security',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 6,
-                    ),
-                    TextFieldInput(textEditingController: _passwordController, hintText: 'Password', textInputType: TextInputType.visiblePassword,isPass: true,),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextFieldInput(textEditingController: _confirmPassController, hintText: 'Confirm Password', textInputType: TextInputType.visiblePassword,isPass: true,),
-                    SizedBox(
-                      height: 16,
-                    ),
-
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: Container(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                _registerUser();
+                            Row(
+                              children: [
+                                Icon(Icons.circle_outlined),
+                                const SizedBox(
+                                  width: 6,
+                                ),
+                                Text(
+                                  'Education',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 6,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _schoolController,
+                                hintText: 'School',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _degreeController,
+                                hintText: 'Degree',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _majorController,
+                                hintText: 'Major',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController:
+                                    _graduationDateController,
+                                hintText: 'Graduation Date',
+                                textInputType: TextInputType.datetime),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _AggrigateController,
+                                hintText: 'Aggrigate Marks',
+                                textInputType: TextInputType.number),
+                            SizedBox(
+                              height: 16,
+                            ),
+                            Row(
+                              children: [
+                                Icon(Icons.circle_outlined),
+                                const SizedBox(
+                                  width: 6,
+                                ),
+                                Text(
+                                  'Work Experience',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 6,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _companyController,
+                                hintText: 'Company',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _jobTitleController,
+                                hintText: 'Job Title',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _jobLocationController,
+                                hintText: 'Job Location',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _jobStartDateController,
+                                hintText: 'Job Start Date',
+                                textInputType: TextInputType.datetime),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _jobEndDateController,
+                                hintText: 'Job End Date',
+                                textInputType: TextInputType.datetime),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController:
+                                    _jobDescriptionController,
+                                hintText: 'Job Description',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 16,
+                            ),
+                            TextField(
+                              controller: _textEditingController,
+                              onSubmitted: (value) {
+                                if (value.isNotEmpty) {
+                                  setState(() {
+                                    _skills.add(value.trim());
+                                    _textEditingController
+                                        .clear(); // Clear the text field after adding skill
+                                  });
+                                }
                               },
-                              child: Text(
-                                'Submit',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Color(0xffe11d48),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
+                              decoration: InputDecoration(
+                                hintText: 'Enter a skill',
                               ),
                             ),
-                          ),
+                            SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
+                              children: _skills.asMap().entries.map((entry) {
+                                return Chip(
+                                  label: Text(entry.value),
+                                  onDeleted: () {
+                                    setState(() {
+                                      _skills.removeAt(entry.key);
+                                    });
+                                  },
+                                );
+                              }).toList(),
+                            ),
+                            SizedBox(
+                              height: 16,
+                            ),
+                            Row(
+                              children: [
+                                Icon(Icons.circle_outlined),
+                                const SizedBox(
+                                  width: 6,
+                                ),
+                                Text(
+                                  'Certifications',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 6,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _certificationController,
+                                hintText: 'Certification',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController:
+                                    _issuingOrganizationController,
+                                hintText: 'Issuing Organization',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _issueDateController,
+                                hintText: 'Issue Date',
+                                textInputType: TextInputType.datetime),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController:
+                                    _expirationDateController,
+                                hintText: 'Expiration Date',
+                                textInputType: TextInputType.datetime),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                String certification =
+                                    _certificationController.text.trim();
+                                String issuingOrganization =
+                                    _issuingOrganizationController.text.trim();
+                                String issueDate =
+                                    _issueDateController.text.trim();
+                                String expiryDate =
+                                    _expirationDateController.text.trim();
+
+                                if (certification.isNotEmpty &&
+                                    issuingOrganization.isNotEmpty &&
+                                    issueDate.isNotEmpty &&
+                                    expiryDate.isNotEmpty) {
+                                  setState(() {
+                                    _certifications.add(Certification(
+                                      certification: certification,
+                                      issuingOrganization: issuingOrganization,
+                                      issueDate: issueDate,
+                                      expiryDate: expiryDate,
+                                    ));
+                                    // Clear input fields
+                                    _certificationController.clear();
+                                    _issuingOrganizationController.clear();
+                                    _issueDateController.clear();
+                                    _expirationDateController.clear();
+                                  });
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                primary: Colors.black, // Background color
+                                onPrimary: Colors.white, // Text color
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      10), // Border radius
+                                ),
+                              ),
+                              child: Text('Add Certification'),
+                            ),
+                            // Display added certifications
+                            ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: _certifications.length,
+                              itemBuilder: (context, index) {
+                                Certification certification =
+                                    _certifications[index];
+                                return ListTile(
+                                  title: Text(certification.certification),
+                                  subtitle: Text(
+                                    'Issuing Organization: ${certification.issuingOrganization}\n'
+                                    'Issue Date: ${certification.issueDate}\n'
+                                    'Expiry Date: ${certification.expiryDate}',
+                                  ),
+                                  trailing: IconButton(
+                                    icon: Icon(Icons.delete),
+                                    onPressed: () {
+                                      setState(() {
+                                        _certifications.removeAt(index);
+                                      });
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                            SizedBox(
+                              height: 16,
+                            ),
+                            Row(
+                              children: [
+                                Icon(Icons.circle_outlined),
+                                const SizedBox(
+                                  width: 6,
+                                ),
+                                Text(
+                                  'Projects',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 6,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _ProjecttitleController,
+                                hintText: 'Title',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _ProjectDateController,
+                                hintText: 'Date',
+                                textInputType: TextInputType.datetime),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController:
+                                    _ProjectDescriptionController,
+                                hintText: 'Description',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                String title =
+                                    _ProjecttitleController.text.trim();
+                                String date =
+                                    _ProjectDateController.text.trim();
+                                String description =
+                                    _ProjectDescriptionController.text.trim();
+
+                                if (title.isNotEmpty &&
+                                    date.isNotEmpty &&
+                                    description.isNotEmpty) {
+                                  setState(() {
+                                    _projects.add(ProjectEntry(
+                                      title: title,
+                                      date: date,
+                                      description: description,
+                                    ));
+                                    // Clear input fields
+                                    _ProjecttitleController.clear();
+                                    _ProjectDateController.clear();
+                                    _ProjectDescriptionController.clear();
+                                  });
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                primary: Colors.black, // Background color
+                                onPrimary: Colors.white, // Text color
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      10), // Border radius
+                                ),
+                              ),
+                              child: Text('Add Project'),
+                            ),
+                            // Display added projects
+                            ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: _projects.length,
+                              itemBuilder: (context, index) {
+                                ProjectEntry project = _projects[index];
+                                return ListTile(
+                                  title: Text(project.title),
+                                  subtitle: Text(
+                                    'Date: ${project.date}\n'
+                                    'Description: ${project.description}',
+                                  ),
+                                  trailing: IconButton(
+                                    icon: Icon(Icons.delete),
+                                    onPressed: () {
+                                      setState(() {
+                                        _projects.removeAt(index);
+                                      });
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                            SizedBox(
+                              height: 16,
+                            ),
+                            Row(
+                              children: [
+                                Icon(Icons.circle_outlined),
+                                const SizedBox(
+                                  width: 6,
+                                ),
+                                Text(
+                                  'Achievements',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 6,
+                            ),
+                            TextFieldInput(
+                                textEditingController:
+                                    _AchievementtitleController,
+                                hintText: 'Title',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController:
+                                    _AchievementDateController,
+                                hintText: 'Date',
+                                textInputType: TextInputType.datetime),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                String title =
+                                    _AchievementtitleController.text.trim();
+                                String date =
+                                    _AchievementDateController.text.trim();
+
+                                if (title.isNotEmpty && date.isNotEmpty) {
+                                  setState(() {
+                                    _achievements.add(AchievementEntry(
+                                      title: title,
+                                      date: date,
+                                    ));
+                                    // Clear input fields
+                                    _AchievementtitleController.clear();
+                                    _AchievementDateController.clear();
+                                  });
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                primary: Colors.black, // Background color
+                                onPrimary: Colors.white, // Text color
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      10), // Border radius
+                                ),
+                              ),
+                              child: Text('Add Achievement'),
+                            ),
+                            // Display added achievements
+                            ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: _achievements.length,
+                              itemBuilder: (context, index) {
+                                AchievementEntry achievement =
+                                    _achievements[index];
+                                return ListTile(
+                                  title: Text(achievement.title),
+                                  subtitle: Text(
+                                    'Date: ${achievement.date}',
+                                  ),
+                                  trailing: IconButton(
+                                    icon: Icon(Icons.delete),
+                                    onPressed: () {
+                                      setState(() {
+                                        _achievements.removeAt(index);
+                                      });
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                            SizedBox(
+                              height: 16,
+                            ),
+
+                            Row(
+                              children: [
+                                Icon(Icons.circle_outlined),
+                                const SizedBox(
+                                  width: 6,
+                                ),
+                                Text(
+                                  'Additional Information',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 6,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _LanguagesController,
+                                hintText: 'Languages',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController:
+                                    _VolunteerExperienceController,
+                                hintText: 'Volunteer Experience',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _PublicationsController,
+                                hintText: 'Publications',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                                textEditingController: _InterestsController,
+                                hintText: 'Interests',
+                                textInputType: TextInputType.text),
+                            SizedBox(
+                              height: 16,
+                            ),
+                            Row(
+                              children: [
+                                Icon(Icons.circle_outlined),
+                                const SizedBox(
+                                  width: 6,
+                                ),
+                                Text(
+                                  'Security',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 6,
+                            ),
+                            TextFieldInput(
+                              textEditingController: _passwordController,
+                              hintText: 'Password',
+                              textInputType: TextInputType.visiblePassword,
+                              isPass: true,
+                            ),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            TextFieldInput(
+                              textEditingController: _confirmPassController,
+                              hintText: 'Confirm Password',
+                              textInputType: TextInputType.visiblePassword,
+                              isPass: true,
+                            ),
+                            SizedBox(
+                              height: 16,
+                            ),
+
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Flexible(
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: 50,
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        _registerUser();
+                                        Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen(),),);
+                                      },
+                                      child: Text(
+                                        'Submit',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Color(0xffe11d48),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 17.9,
+                            )
+                          ],
                         ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 17.9,
-                    )
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+            );
+          }
+  //       });
+  // }
 }

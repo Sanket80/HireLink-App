@@ -67,8 +67,10 @@ class _LoginScreenState extends State<LoginScreen> {
       var jsonResponse = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        // prefs.setString('token', jsonResponse['token']);
-        // print('Token: ${jsonResponse['token']}');
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString('id', jsonResponse['id']); // Save as String
+        print('User ID: ${jsonResponse['id']}');
+
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => HomeScreen(),

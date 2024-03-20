@@ -1,46 +1,54 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:hirelink/Screens/CompanyDetails.dart';
-import 'package:hirelink/Screens/Profile.dart';
-import 'package:hirelink/Screens/chat_bot.dart';
-import 'package:hirelink/Screens/statistics.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../utils/ip.dart';
+import 'CompanyDetails.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+  late Future<List<JobData>> _jobListFuture;
 
-  final List<Job> jobs = [
-    Job(
-      company: 'Google',
-      location: 'California, USA',
-      role: 'Sr. User Experience Designer',
-      salary: const SalaryRange(minSalary: 85000, maxSalary: 120000),
-      postedDaysAgo: 2,
-      imageLink: 'assets/Google.png', // Replace with actual image link
-    ),
-    Job(
-      company: 'Airbnb',
-      location: 'San Francisco, USA',
-      role: 'Sr. Fullstack Developer',
-      salary: const SalaryRange(minSalary: 75000, maxSalary: 125000),
-      postedDaysAgo: 2,
-      imageLink: 'assets/airbnb.png', // Replace with actual image link
-    ),
-    Job(
-      company: 'Slack',
-      location: 'San Francisco, USA',
-      role: 'Sr. Software Engineer',
-      salary: const SalaryRange(minSalary: 90000, maxSalary: 150000),
-      postedDaysAgo: 2,
-      imageLink: 'assets/slack.png', // Replace with actual image link
-    ),
+  @override
+  void initState() {
+    super.initState();
+    _jobListFuture = _fetchJobs();
+  }
+
+  Future<List<JobData>> _fetchJobs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userId = prefs.getString('userId') ?? '';
+
+    final response = await http.post(
+      Uri.parse('http://$ipAddress:$port/api/shownotifications'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'id': userId}),
+    );
+
+    if (response.statusCode == 200) {
+      final dynamic responseData = jsonDecode(response.body);
+      final List<dynamic> jobDataList = responseData['jobData'];
+      return jobDataList.map((data) => JobData.fromJson(data)).toList();
+    } else {
+      throw Exception('Failed to load jobs');
+    }
+  }
+
+  final List<String> logoImages = [
+    'assets/Google.png', // Replace with your logo paths/URLs
+    'assets/airbnb.png',
+    'assets/slack.png',
   ];
+  late String selectedLogo;
 
   @override
   Widget build(BuildContext context) {
@@ -48,204 +56,231 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: Colors.grey[200],
       ),
-      body: Container(
-        color: Colors.grey[200],
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: Text(
-                'Offered Jobs',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.left,
-              ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: jobs.length,
-                itemBuilder: (context, index) {
-                  final job = jobs[index];
-                  return JobCard(job: job);
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        color: Colors.black,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-          child: GNav(
-            selectedIndex: _selectedIndex,
-            backgroundColor: Colors.black,
-            activeColor: Colors.white,
-            color: Colors.white,
-            tabBackgroundColor: Colors.grey.shade800,
-            gap: 8,
-            padding: EdgeInsets.all(12),
-            tabs: [
-              GButton(
-                icon: Icons.home,
-                text: 'Home',
-                onPressed: () {
-                  setState(() {
-                    _selectedIndex = 0;
-                  });
-                },
-              ),
-              GButton(
-                icon: Icons.insert_chart_outlined,
-                text: 'Stats',
-                onPressed: () {
-                  setState(() {
-                    _selectedIndex = 1;
-                  });
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => StatisticsPage(),
+      body: FutureBuilder<List<JobData>>(
+        future: _jobListFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          } else if (snapshot.data == null || snapshot.data!.isEmpty) {
+            return Center(
+              child: Text('No job openings available'),
+            );
+          } else {
+            final List<JobData> jobDataList = snapshot.data!;
+            return Container(
+              color: Color(0xfff4f4ee),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16, top: 16),
+                    child: Text(
+                      'Offered Jobs',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  );
-                },
-              ),
-              GButton(
-                icon: Icons.chat,
-                text: 'Chat',
-                onPressed: () {
-                  setState(() {
-                    _selectedIndex = 2;
-                  });
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ChatBot()),
-                  );
-                },
-              ),
-              GButton(
-                icon: Icons.person,
-                text: 'Profile',
-                onPressed: () {
-                  setState(() {
-                    _selectedIndex = 3;
-                  });
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class JobCard extends StatelessWidget {
-  final Job job;
-
-  const JobCard({Key? key, required this.job}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
-      child: GestureDetector(
-        onTap: () {
-          // Add your onTap function here
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CompanyDetails(),
-            ),
-          );
-        },
-        child: Card(
-          color: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Image.asset(
-                      job.imageLink,
-                      height: 50,
-                      width: 50,
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          job.company,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          job.location,
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    const Icon(Icons.bookmark_add_outlined),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  job.role,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '\$${job.salary.minSalary} - \$${job.salary.maxSalary}',
-                  style: const TextStyle(color: Colors.black54),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Posted on ${job.postedDaysAgo} days ago',
-                  style: const TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-        ),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: jobDataList.length,
+                      itemBuilder: (context, index) {
+                        final jobData = jobDataList[index];
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return CompanyDetails();
+                                  },
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 8, right: 8),
+                              child: Card(
+                                color: Colors.white,
+                                elevation: 4,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                         Image.asset(
+                                           logoImages[index % logoImages.length],
+                                           height: 50,
+                                           width: 50,),
+                                          SizedBox(width: 16),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                jobData.companyInfo.companyName,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 18,
+                                                ),
+                                              ),
+                                              Text(
+                                                jobData.jobDescription.location,
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          // bookmark icon
+                                          Spacer(),
+                                          IconButton(
+                                            icon: Icon(Icons.bookmark_border),
+                                            onPressed: () {},
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        jobData.jobDescription.title,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        jobData.jobDescription.role,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        'Salary: ${jobData.jobDescription.salary}',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+        },
       ),
     );
   }
 }
 
-class Job {
-  final String company;
-  final String location;
-  final String role;
-  final SalaryRange salary;
-  final int postedDaysAgo;
-  final String imageLink;
+class JobData {
+  final JobDescription jobDescription;
+  final CompanyInfo companyInfo;
 
-  Job({
-    required this.company,
-    required this.location,
-    required this.role,
-    required this.salary,
-    required this.postedDaysAgo,
-    required this.imageLink,
+  JobData({
+    required this.jobDescription,
+    required this.companyInfo,
   });
+
+  factory JobData.fromJson(Map<String, dynamic> json) {
+    return JobData(
+      jobDescription: JobDescription.fromJson(json['jobDescription']),
+      companyInfo: CompanyInfo.fromJson(json['companyInfo']),
+    );
+  }
 }
 
-class SalaryRange {
-  final int minSalary;
-  final int maxSalary;
+class JobDescription {
+  final String id;
+  final String title;
+  final String type;
+  final String location;
+  final String description;
+  final String role;
+  final List<String> skills;
+  final int experience;
+  final String salary;
+  final String status;
+  final DateTime date;
 
-  const SalaryRange({
-    required this.minSalary,
-    required this.maxSalary,
+  JobDescription({
+    required this.id,
+    required this.title,
+    required this.type,
+    required this.location,
+    required this.description,
+    required this.role,
+    required this.skills,
+    required this.experience,
+    required this.salary,
+    required this.status,
+    required this.date,
   });
+
+  factory JobDescription.fromJson(Map<String, dynamic> json) {
+    return JobDescription(
+      id: json['id'],
+      title: json['title'],
+      type: json['type'],
+      location: json['location'],
+      description: json['description'],
+      role: json['role'],
+      skills: List<String>.from(json['skills']),
+      experience: json['experience'],
+      salary: json['salary'],
+      status: json['status'],
+      date: DateTime.parse(json['date']),
+    );
+  }
+}
+
+class CompanyInfo {
+  final String companyName;
+  final String companyAddress;
+  final String companyPhone;
+  final String companyEmail;
+  final String companyWebsite;
+  final String companyDescription;
+
+  CompanyInfo({
+    required this.companyName,
+    required this.companyAddress,
+    required this.companyPhone,
+    required this.companyEmail,
+    required this.companyWebsite,
+    required this.companyDescription,
+  });
+
+  factory CompanyInfo.fromJson(Map<String, dynamic> json) {
+    return CompanyInfo(
+      companyName: json['companyName'],
+      companyAddress: json['companyAddress'],
+      companyPhone: json['companyPhone'],
+      companyEmail: json['companyEmail'],
+      companyWebsite: json['companyWebsite'],
+      companyDescription: json['companyDescription'],
+    );
+  }
 }

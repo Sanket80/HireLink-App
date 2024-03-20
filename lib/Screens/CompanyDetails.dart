@@ -101,7 +101,7 @@ class _CompanyDetailsState extends State<CompanyDetails> {
                   width: double.infinity,
                   child: ElevatedButton(
                   onPressed: () {
-                  // Add your onPressed function here
+                  Navigator.pop(context);
                   },
                   child: Text('Accept'),
                     style: ElevatedButton.styleFrom(
