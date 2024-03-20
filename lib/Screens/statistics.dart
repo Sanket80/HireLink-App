@@ -135,7 +135,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
                 },
               ),
               GButton(
-                icon: Icons.home_work_outlined,
+                icon: Icons.person,
                 text: 'Jobs',
                 onPressed: () {
                   setState(() {

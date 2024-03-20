@@ -61,7 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Mrs John',
+                      'Mr. Siddheya',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -101,7 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                                 SizedBox(width: 12),
                                 Text(
-                                  'www.linkedin.com/in/johndoe',
+                                  'www.linkedin.com/in/siddhey',
                                   style: TextStyle(
                                     fontSize: 18,
                                     color: Colors.black,
@@ -132,7 +132,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                                 SizedBox(width: 12),
                                 Text(
-                                  'www.github.com/johndoe',
+                                  'www.github.com/siddhey',
                                   style: TextStyle(
                                     fontSize: 18,
                                     color: Colors.black,
@@ -217,13 +217,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                                 SizedBox(width: 12),
                                 Text(
-                                  'California, USA',
+                                  'Mumbai, India',
                                   style: TextStyle(
                                     fontSize: 18,
                                     color: Colors.black,
                                   ),
                                 ),
-                                SizedBox(width: 138),
+                                SizedBox(width: 146),
                                 Icon(
                                   Icons.edit,
                                   color: Color(0xffe11d48),

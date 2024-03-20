@@ -161,7 +161,7 @@ class _ChatBotState extends State<ChatBot> {
                 },
               ),
               GButton(
-                icon: Icons.home_work_outlined,
+                icon: Icons.person,
                 text: 'Jobs',
                 onPressed: () {
                   setState(() {

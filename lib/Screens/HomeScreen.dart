@@ -1,10 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:hirelink/Screens/chat_bot.dart';
+import 'package:hirelink/Screens/statistics.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/ip.dart';
 import 'CompanyDetails.dart';
+import 'Profile.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -14,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
   late Future<List<JobData>> _jobListFuture;
 
   @override
@@ -24,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<List<JobData>> _fetchJobs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String userId = prefs.getString('userId') ?? '';
+    String userId = prefs.getString('id') ?? '';
 
     final response = await http.post(
       Uri.parse('http://$ipAddress:$port/api/shownotifications'),
@@ -53,143 +58,208 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.grey[200],
-      ),
-      body: FutureBuilder<List<JobData>>(
-        future: _jobListFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
-          } else if (snapshot.data == null || snapshot.data!.isEmpty) {
-            return Center(
-              child: Text('No job openings available'),
-            );
-          } else {
-            final List<JobData> jobDataList = snapshot.data!;
-            return Container(
-              color: Color(0xfff4f4ee),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 16, top: 16),
-                    child: Text(
-                      'Offered Jobs',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+      body: SafeArea(
+        child: FutureBuilder<List<JobData>>(
+          future: _jobListFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text('Error: ${snapshot.error}'),
+              );
+            } else if (snapshot.data == null || snapshot.data!.isEmpty) {
+              return Center(
+                child: Text('No job openings available'),
+              );
+            } else {
+              final List<JobData> jobDataList = snapshot.data!;
+              return Container(
+                color: Color(0xfff4f4ee),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16, top: 16),
+                      child: Text(
+                        'Offered Jobs',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: jobDataList.length,
-                      itemBuilder: (context, index) {
-                        final jobData = jobDataList[index];
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) {
-                                    return CompanyDetails();
-                                  },
-                                ),
-                              );
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 8, right: 8),
-                              child: Card(
-                                color: Colors.white,
-                                elevation: 4,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                         Image.asset(
-                                           logoImages[index % logoImages.length],
-                                           height: 50,
-                                           width: 50,),
-                                          SizedBox(width: 16),
-                                          Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                jobData.companyInfo.companyName,
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 18,
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: jobDataList.length,
+                        itemBuilder: (context, index) {
+                          final jobData = jobDataList[index];
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return CompanyDetails();
+                                    },
+                                  ),
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 8, right: 8),
+                                child: Card(
+                                  color: Colors.white,
+                                  elevation: 4,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                           Image.asset(
+                                             logoImages[index % logoImages.length],
+                                             height: 50,
+                                             width: 50,),
+                                            SizedBox(width: 16),
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  jobData.companyInfo.companyName,
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 18,
+                                                  ),
                                                 ),
-                                              ),
-                                              Text(
-                                                jobData.jobDescription.location,
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.grey,
+                                                Text(
+                                                  jobData.jobDescription.location,
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Colors.grey,
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
+                                            // bookmark icon
+                                            Spacer(),
+                                            IconButton(
+                                              icon: Icon(Icons.bookmark_border),
+                                              onPressed: () {},
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 8),
+                                        Text(
+                                          jobData.jobDescription.title,
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          // bookmark icon
-                                          Spacer(),
-                                          IconButton(
-                                            icon: Icon(Icons.bookmark_border),
-                                            onPressed: () {},
+                                        ),
+                                        SizedBox(height: 4),
+                                        Text(
+                                          jobData.jobDescription.role,
+                                          style: TextStyle(
+                                            fontSize: 14,
                                           ),
-                                        ],
-                                      ),
-                                      SizedBox(height: 8),
-                                      Text(
-                                        jobData.jobDescription.title,
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
                                         ),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        jobData.jobDescription.role,
-                                        style: TextStyle(
-                                          fontSize: 14,
+                                        SizedBox(height: 4),
+                                        Text(
+                                          'Salary: ${jobData.jobDescription.salary}',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                          ),
                                         ),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        'Salary: ${jobData.jobDescription.salary}',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+              );
+            }
+          },
+        ),
+      ),
+      bottomNavigationBar: Container(
+        color: Colors.black,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+          child: GNav(
+            selectedIndex: _selectedIndex,
+            backgroundColor: Colors.black,
+            activeColor: Colors.white,
+            color: Colors.white,
+            tabBackgroundColor: Colors.grey.shade800,
+            gap: 8,
+            padding: EdgeInsets.all(12),
+            tabs: [
+              GButton(
+                icon: Icons.home,
+                text: 'Home',
+                onPressed: () {
+                  setState(() {
+                    _selectedIndex = 0;
+                  });
+                },
               ),
-            );
-          }
-        },
+              GButton(
+                icon: Icons.insert_chart_outlined,
+                text: 'Stats',
+                onPressed: () {
+                  setState(() {
+                    _selectedIndex = 1;
+                  });
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StatisticsPage(),
+                    ),
+                  );
+                },
+              ),
+              GButton(
+                icon: Icons.chat,
+                text: 'Chat',
+                onPressed: () {
+                  setState(() {
+                    _selectedIndex = 2;
+                  });
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatBot(),
+                    ),
+                  );
+                },
+              ),
+              GButton(
+                icon: Icons.person,
+                text: 'Jobs',
+                onPressed: () {
+                  setState(() {
+                    _selectedIndex = 3;
+                  });
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
